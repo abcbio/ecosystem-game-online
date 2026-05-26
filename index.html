@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Ecosystem Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Ecosystem Game</h1>
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="ui">
+    <button onclick="add('tree')">+Tree</button>
+    <button onclick="remove('tree')">-Tree</button>
+    <button onclick="add('lake')">+Lake</button>
+    <button onclick="remove('lake')">-Lake</button>
+    <button onclick="add('dino')">+Dino</button>
+    <button onclick="remove('dino')">-Dino</button>
+    <button onclick="addBird()">+Bird</button>
+    <button onclick="removeBird()">-Bird</button>
+    <button onclick="startGame()">START</button>
+  </div>
+
+  <p id="stats"></p>
+
+  <script src="script.js"></script>
+</body>
+</html>
