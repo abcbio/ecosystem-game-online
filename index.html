@@ -4,26 +4,102 @@
   <meta charset="UTF-8">
   <title>Ecosystem Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ <style>
+  body {
+    text-align: center;
+    font-family: Arial;
+    background: #f5f5f5;
+  }
+
+  canvas {
+    border: 2px solid black;
+    background: white;
+  }
+
+  /* ✅ GROßE BUTTONS */
+  button {
+    margin: 10px;
+    padding: 30px 40px;   /* größer */
+    font-size: 26px;      /* deutlich größer */
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    transform: scale(1.1);
+  }
+
+  /* ✅ UI LEISTE */
+#ui {
+  display: flex;
+  justify-content: center;
+  gap: 50px;   /* 👉 Abstand zwischen den Gruppen */
+  margin-top: 20px;
+}
+
+#ui > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;   /* 👉 kleiner Abstand INNERHALB ( + − icon ) */
+}
+
+
+  /* ✅ GROßE ICONS */
+  #ui img {
+    width: 60px;   /* vorher 40 */
+    height: 60px;
+    object-fit: scale-down;
+  }
+
+  /* ✅ START BUTTON EXTRA GROß */
+  #ui button:last-child {
+    font-size: 32px;
+    padding: 20px 50px;
+    background: green;
+    color: white;
+  }
+</style>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <h1>Ecosystem Game</h1>
+
   <canvas id="gameCanvas"></canvas>
 
   <div id="ui">
-    <button onclick="add('tree')">+Tree</button>
-    <button onclick="remove('tree')">-Tree</button>
-    <button onclick="add('lake')">+Lake</button>
-    <button onclick="remove('lake')">-Lake</button>
-    <button onclick="add('dino')">+Dino</button>
-    <button onclick="remove('dino')">-Dino</button>
-    <button onclick="addBird()">+Bird</button>
-    <button onclick="removeBird()">-Bird</button>
-    <button onclick="startGame()">START</button>
+    <div>
+      <button onclick="add('tree')">+</button>
+      <button onclick="remove('tree')">−</button>
+      <img src="tree.png" alt="tree">
+    </div>
+
+    <div>
+      <button onclick="add('lake')">+</button>
+      <button onclick="remove('lake')">−</button>
+      <img src="lake.png" alt="lake">
+    </div>
+
+    <div>
+      <button onclick="add('dino')">+</button>
+      <img src="dino.png" alt="dino">
+    </div>
+
+    <div>
+      <button onclick="addBird()">+</button>
+      <img src="bird.png" alt="bird">
+    </div>
+
+    <div>
+      <button onclick="startGame()">START</button>
+    </div>
   </div>
 
-  <p id="stats"></p>
-
   <script src="script.js"></script>
+
 </body>
 </html>

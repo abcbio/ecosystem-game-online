@@ -5,6 +5,31 @@ canvas.width = 900;
 canvas.height = 600;
 
 // ------------------
+// Bilder laden (PNG)
+// ------------------
+const images = {
+  tree: new Image(),
+  lake: new Image(),
+  dino: new Image(),
+  bird: new Image()
+};
+
+images.tree.src = "tree.png";
+images.lake.src = "lake.png";
+images.dino.src = "dino.png";
+images.bird.src = "bird.png";
+
+// Preload
+let loadedImages = 0;
+const totalImages = Object.keys(images).length;
+
+for (let key in images) {
+  images[key].onload = () => {
+    loadedImages++;
+  };
+}
+
+// ------------------
 // Grid
 // ------------------
 const SIZE = 80;
@@ -15,8 +40,8 @@ let birds = new Array(12).fill("empty");
 // ------------------
 // Game values
 // ------------------
-let oxygen = 50;
-let co2 = 40;
+let oxygen = 21;
+let co2 = 0.03;
 let running = false;
 
 let startTime = 0;
@@ -66,8 +91,8 @@ class Particle {
 let o2Particles = [];
 let co2Particles = [];
 
-const O2_AREA = { x: 0, y: 0, w: 450, h: 180 };
-const CO2_AREA = { x: 450, y: 0, w: 450, h: 180 };
+const O2_AREA = { x: 50, y: 20, w: 800, h: 50 };
+const CO2_AREA = { x: 50, y: 20, w: 800, h: 50 };
 
 function syncParticles(value, particles, color, area) {
   let target = Math.floor(value);
@@ -128,10 +153,17 @@ function removeBird() {
 function startGame() {
   bottom.fill("empty");
   birds.fill("empty");
-  oxygen = 50;
-  co2 = 40;
+  oxygen = 21;
+  co2 = 0.03;
   running = true;
   startTime = Date.now();
+
+  // ✅ Spielanzahl erhöhen
+  let plays = localStorage.getItem("playCount");
+  plays = plays ? parseInt(plays) : 0;
+  plays++;
+
+  localStorage.setItem("playCount", plays);
 }
 
 // ------------------
@@ -149,19 +181,17 @@ function update() {
   let dinos = count(bottom, "dino");
   let birdCount = count(birds, "bird");
 
-  oxygen += trees * 0.8 + lakes * 0.5 - dinos * 1.0 - birdCount * 0.4;
-  co2 += dinos * 1.2 + birdCount * 0.4 - trees * 0.8 - lakes * 0.5;
+  oxygen += trees * 0.001 + lakes * 0.001 - dinos * 0.001 - birdCount * 0.001;
+  co2 += dinos * 0.0001 + birdCount * 0.00005 - trees * 0.00001 - lakes * 0.0001;
 
-  oxygen = Math.max(0, Math.min(100, oxygen));
-  co2 = Math.max(0, Math.min(100, co2));
+  oxygen = Math.max(0, Math.min(25, oxygen));
+  co2 = Math.max(0, Math.min(0.08, co2));
 
-  // Death rules
-  if (oxygen < 10 || co2 > 80) remove("dino");
-  if (oxygen < 20 || co2 > 60) removeBird();
+  if (oxygen < 15 || co2 > 0.07) remove("dino");
+  if (oxygen < 20 || co2 > 0.07) removeBird();
 
-  // Particles sync
   syncParticles(oxygen, o2Particles, "blue", O2_AREA);
-  syncParticles(co2, co2Particles, "red", CO2_AREA);
+  syncParticles(co2*100, co2Particles, "red", CO2_AREA);
 
   let elapsed = (Date.now() - startTime) / 1000;
   if (elapsed >= ROUND_TIME) {
@@ -170,15 +200,14 @@ function update() {
   }
 }
 
-function getBiodiversity() {
-  return (count(birds, "bird") + count(bottom, "dino")) / 24 * 100;
-}
+function getBiodiversity() {  return (    (count(birds, "bird")*3 +     count(bottom, "dino")*3 +     count(bottom, "tree") +     count(bottom, "lake"))     / 70 * 100  );}
+
 
 // ------------------
 // End Game
 // ------------------
 function endGame() {
-  let name = prompt("Dein Name?");
+  let name = prompt("Your Name?");
   if (!name) name = "NoName";
 
   let score = getBiodiversity();
@@ -189,29 +218,40 @@ function endGame() {
 
   localStorage.setItem("ecoScores", JSON.stringify(scores));
 
-  alert("Score gespeichert!");
 }
 
 // ------------------
-// Drawing
+// Drawing (MIT PNGs)
 // ------------------
 function drawBox(x, y, type) {
   ctx.strokeRect(x, y, SIZE, SIZE);
 
-  if (type === "tree") ctx.fillText("🌳", x + 20, y + 50);
-  if (type === "lake") ctx.fillText("💧", x + 20, y + 50);
-  if (type === "dino") ctx.fillText("🦖", x + 20, y + 50);
-  if (type === "bird") ctx.fillText("🐦", x + 20, y + 50);
+  if (type === "empty") return;
+
+  const img = images[type];
+
+
+  if (img && img.complete) {    
+	const scale = 1.1; // 👉 Größe anpassen (z.B. 1.2 - 2.0)    
+	const w = SIZE * scale;    
+	const h = SIZE * scale;    // 👉 zentriert zeichnen → geht über Box hinaus    
+	const offsetX = x + SIZE / 2 - w / 2;    
+	const offsetY = y + SIZE / 2 - h / 2;    
+	ctx.drawImage(img, offsetX, offsetY, w, h);
+  }
+
 }
 
+
 function drawLeaderboard() {
-  ctx.fillText("Leaderboard:", 600, 250);
+  ctx.font = "12px Arial";
+  ctx.fillText("Leaderboard:", 650, 300);
 
   scores.forEach((s, i) => {
     ctx.fillText(
       (i + 1) + ". " + s.name + " - " + s.score.toFixed(1) + "%",
-      600,
-      280 + i * 20
+      650,
+      330 + i * 20
     );
   });
 }
@@ -219,7 +259,6 @@ function drawLeaderboard() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Particles
   o2Particles.forEach(p => {
     p.update();
     p.draw();
@@ -232,32 +271,36 @@ function draw() {
 
   ctx.font = "30px Arial";
 
-  // Birds
   for (let i = 0; i < 12; i++) {
     let x = 50 + (i % 6) * (SIZE + 10);
-    let y = 50 + Math.floor(i / 6) * (SIZE + 10);
+    let y = 100 + Math.floor(i / 6) * (SIZE + 10);
     drawBox(x, y, birds[i]);
   }
 
-  // Bottom
   for (let i = 0; i < 12; i++) {
     let x = 50 + (i % 6) * (SIZE + 10);
-    let y = 250 + Math.floor(i / 6) * (SIZE + 10);
+    let y = 350 + Math.floor(i / 6) * (SIZE + 10);
     drawBox(x, y, bottom[i]);
   }
 
-  ctx.font = "18px Arial";
+  ctx.font = "24px Arial";
 
-  ctx.fillText("O2: " + oxygen.toFixed(1), 600, 100);
-  ctx.fillText("CO2: " + co2.toFixed(1), 600, 130);
-  ctx.fillText("Biodiversity: " + getBiodiversity().toFixed(1) + "%", 600, 160);
+  ctx.fillText("O2: " + oxygen.toFixed(1)+ "%", 650, 170);
+  ctx.fillText("CO2: " + co2.toFixed(3)+ "%", 650, 200);
+  ctx.fillText("Biodiversity: " + getBiodiversity().toFixed(1) + "%", 650, 230);
+
+  ctx.font = "30px Arial";
+
 
   if (running) {
     let remaining = ROUND_TIME - (Date.now() - startTime) / 1000;
-    ctx.fillText("Time: " + remaining.toFixed(0), 600, 190);
+    ctx.fillText("Time: " + remaining.toFixed(0), 600, 130);
   }
 
   drawLeaderboard();
+
+  let plays = localStorage.getItem("playCount") || 0;
+  ctx.fillText("Played: " + plays, 650, 260);
 }
 
 // ------------------
